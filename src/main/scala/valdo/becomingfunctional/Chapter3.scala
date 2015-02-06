@@ -20,6 +20,11 @@ object Chapter3 {
     println("Fold right using fold left" + List.foldRightUsingFoldLeft(List(1,2,3,4), Nil:List[Int])(Cons(_, _)))
     println("Append with fold right " + List.append(List(1,2,3), List(4)))
     println("Concat " + List.concat(List(List(1),List(2), List(3, 4))))
+    println("Remove odd numbers " + List.filter(List(1,2,3,4))(_ % 2 == 0))
+    println("flat map " + List.filterWithFlatMap(List(1,2,3,4))(_ % 2 == 0))
+    println("plus elements " + List.plusElements(List(1,2,3), List(4,5,6)))
+    println("zip With" + List.zipWith(List(1,2,3), List(4,5,6))(_ + _))
+    println("hasSubsequence " + List.hasSubsequence(List(1,2,3,4), List(2,3,4)))
   }
 }
 
@@ -92,6 +97,72 @@ case object List {
   def append[A](as: List[A], e: List[A]): List[A] = foldRight(as, e)(Cons(_, _))
 
   def concat[A](a: List[List[A]]): List[A] = foldRight(a, Nil:List[A])(append)
+
+  //3.16
+  def plusOneEachElement(a: List[Int]): List[Int] = a match {
+    case Nil => Nil
+    case Cons(head, tail) => Cons(head + 1, plusOneEachElement(tail))
+  }
+
+  //3.17
+  def doublesToString(a: List[Double]): List[String] = a match {
+    case Nil => Nil
+    case Cons(head, tail) => Cons(head.toString(), doublesToString(tail))
+  }
+
+  //3.18
+  def map[A, B](a: List[A])(f: A => B): List[B] = a match {
+    case Nil => Nil
+    case Cons(head, tail) => Cons(f(head), map(tail)(f))
+  }
+
+  //3.19
+  def filter[A](a: List[A])(f: A => Boolean): List[A] = a match {
+    case Nil => Nil
+    case Cons(head, tail) => if (f(head)) Cons(head, filter(tail)(f))
+      else filter(tail)(f)
+  }
+
+  //3.20
+  def flatMap[A, B](a: List[A])(f: A => List[B]): List[B] = a match {
+    case Nil => Nil
+    case Cons(head, tail) => append(f(head), flatMap(tail)(f))
+  }
+
+  def filterWithFlatMap[A](a: List[A])(f: A => Boolean): List[A] = flatMap(a)(i => if (f(i)) List(i) else Nil)
+
+  //3.22
+  def plusElements(a: List[Int], b: List[Int]): List[Int] = a match {
+    case Nil => Nil
+    case Cons(aHead, aTail) => b match {
+      case Nil => Nil
+      case Cons(bHead, bTail) => Cons(aHead + bHead, plusElements(aTail, bTail))
+    }
+  }
+
+  //3.23
+  def zipWith[A](a: List[A], b: List[A])(f: (A, A) => A): List[A] = a match {
+    case Nil => Nil
+    case Cons(aHead, aTail) => b match {
+      case Nil => Nil
+      case Cons(bHead, bTail) => Cons(f(aHead, bHead), zipWith(aTail, bTail)(f))
+    }
+  }
+
+  //3.24
+  def hasSubsequence[A](a: List[A], sub: List[A]): Boolean = {
+    a match {
+      case Nil => sub match {
+        case Nil => true
+        case _ => false
+      }
+      case Cons(aHead, aTail) => sub match {
+        case Nil => true
+        case Cons(sHead, sTail) => if (aHead == sHead) hasSubsequence(aTail, sTail)
+          else hasSubsequence(aTail, sub)
+      }
+    }
+  }
 
   def apply[A](as: A*): List[A] = {
     if (as.isEmpty) Nil
